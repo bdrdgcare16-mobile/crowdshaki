@@ -1179,6 +1179,518 @@
 
 
 
+// "use client";
+// import React, { useState } from "react";
+// import Navbar from "../../../components/Navbar";
+// import Footer from "../../../components/Footer";
+// import { toast } from "react-toastify";
+// import { hospitalDetails, verifyOTP, sendOTP } from "@/app/actions/hospitalDetails";
+// import useAuthStore from "../../../store/authStore";
+
+// const today = new Date().toISOString().split("T")[0];
+
+// const HospitalForm = () => {
+//   const [otp, setOtp] = useState("");
+//   const [otpSent, setOtpSent] = useState(false);
+//   const [formPending, setFormPending] = useState(false);
+  
+//   const [formData, setFormData] = useState({
+//     hospitalName: "",
+//     address: "",
+//     street: "",
+//     city: "",
+//     state: "",
+//     pincode: "",
+//     country: "",
+//     phoneNumber: "",
+//     email: "",
+//     website: "",
+//     registrationNumber: "",
+//     dateOfRegistration: "",
+//     accreditationDetails: "",
+//     medicalDirector: "",
+//     directorContact: "",
+//     directorEmail: "",
+//     primaryContactName: "",
+//     primaryContactDesignation: "",
+//     primaryContactNumber: "",
+//     primaryContactEmail: "",
+//     totalBeds: "",
+//     icuBeds: "",
+//     emergencyBeds: "",
+//     specialties: [],
+//     services: [],
+//     availability: "",
+//     emergencyContactNumber: "",
+//     doctors: "",
+//     specialists: "",
+//     residentDoctors: "",
+//     nurses: "",
+//     keySpecialists: [
+//       {
+//         specialty: "",
+//         name: "",
+//         qualification: "",
+//         contact: "",
+//         email: "",
+//       },
+//     ],
+//     teleconsultationAvailable: "",
+//     technologyDetails: "",
+//     diagnosticEquipment: "",
+//     surgicalEquipment: "",
+//     isoCertified: "",
+//     nabhAccredited: "",
+//     otherCertifications: "",
+//     regulatoryCompliance: "",
+//     complianceDetails: "",
+//     declarerName: "",
+//     declarerDesignation: "",
+//     declarationDate: today,
+//     additionalDocuments: "",
+//   });
+
+//   const specialtiesList = [
+//     "General Medicine",
+//     "General Surgery",
+//     "Orthopedics",
+//     "Pediatrics",
+//     "Obstetrics & Gynecology",
+//     "Cardiology",
+//     "Neurology",
+//     "Oncology",
+//     "Dermatology",
+//     "ENT",
+//     "Ophthalmology",
+//     "Psychiatry",
+//     "Other",
+//   ];
+
+//   const servicesList = [
+//     "Teleconsultation Services",
+//     "Surgeries",
+//     "Inpatient Services",
+//     "Emergency Care",
+//     "Trauma Care",
+//     "Diagnostics",
+//     "Follow-up Care",
+//     "Other",
+//   ];
+
+//   const { isAuthenticated, user } = useAuthStore();
+
+//   const handleInputChange = (e: any) => {
+//     const { name, value, type, checked } = e.target;
+//     if (type === "checkbox") {
+//       const updatedList = checked
+//         ? [...formData[name as keyof typeof formData], value]
+//         : (formData[name as keyof typeof formData] as string[]).filter((item: any) => item !== value);
+//       setFormData({ ...formData, [name]: updatedList });
+//     } else {
+//       setFormData({ ...formData, [name]: value });
+//     }
+//   };
+
+//   const handleSpecialistChange = (
+//     e: React.ChangeEvent<HTMLInputElement>,
+//     index: number,
+//     field: "specialty" | "name" | "qualification" | "contact" | "email"
+//   ) => {
+//     const updatedSpecialists = [...formData.keySpecialists];
+//     updatedSpecialists[index][field] = e.target.value;
+//     setFormData({ ...formData, keySpecialists: updatedSpecialists });
+//   };
+
+//   const addNewSpecialist = () => {
+//     setFormData((prevState: any) => ({
+//       ...prevState,
+//       keySpecialists: [
+//         ...prevState.keySpecialists,
+//         { specialty: "", name: "", qualification: "", contact: "", email: "" },
+//       ],
+//     }));
+//   };
+
+//   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+//     event.preventDefault();
+
+//     const data = new FormData();
+//     Object.entries(formData).forEach(([key, value]) => {
+//       if (typeof value === "object" || typeof value === "boolean") {
+//         data.append(key, JSON.stringify(value));
+//       } else {
+//         data.append(key, value as string);
+//       }
+//     });
+
+//     if (!otpSent) {
+//       // STEP 1: Send OTP using form email and phone
+//       if (!formData.email || !formData.phoneNumber) {
+//         toast.error("Please fill email and phone number", {
+//           position: "bottom-right",
+//           theme: "dark",
+//         });
+//         return;
+//       }
+
+//       setFormPending(true);
+//       const otpHasSent = await sendOTP(formData.email, formData.phoneNumber);
+//       setFormPending(false);
+
+//       if (otpHasSent.success === true) {
+//         setOtpSent(true);
+//         toast.success("OTP sent to your email and mobile!", {
+//           position: "bottom-right",
+//           autoClose: 4000,
+//           theme: "dark",
+//         });
+//       } else {
+//         toast.error(otpHasSent.error || "Failed to send OTP", {
+//           position: "bottom-right",
+//           theme: "dark",
+//         });
+//       }
+//     } else {
+//       // STEP 2: Verify OTP
+//       setFormPending(true);
+//       const verifyingOTP = await verifyOTP(formData.email, otp);
+
+//       if (verifyingOTP.success === true) {
+//         const res = await hospitalDetails(data);
+//         setFormPending(false);
+
+//         if (res.success) {
+//           toast.success("Hospital registered successfully!", {
+//             position: "bottom-right",
+//             autoClose: 4000,
+//             theme: "dark",
+//           });
+
+//           // Reset form
+//           setFormData({
+//             hospitalName: "",
+//             address: "",
+//             street: "",
+//             city: "",
+//             state: "",
+//             pincode: "",
+//             country: "",
+//             phoneNumber: "",
+//             email: "",
+//             website: "",
+//             registrationNumber: "",
+//             dateOfRegistration: "",
+//             accreditationDetails: "",
+//             medicalDirector: "",
+//             directorContact: "",
+//             directorEmail: "",
+//             primaryContactName: "",
+//             primaryContactDesignation: "",
+//             primaryContactNumber: "",
+//             primaryContactEmail: "",
+//             totalBeds: "",
+//             icuBeds: "",
+//             emergencyBeds: "",
+//             specialties: [],
+//             services: [],
+//             availability: "",
+//             emergencyContactNumber: "",
+//             doctors: "",
+//             specialists: "",
+//             residentDoctors: "",
+//             nurses: "",
+//             keySpecialists: [
+//               {
+//                 specialty: "",
+//                 name: "",
+//                 qualification: "",
+//                 contact: "",
+//                 email: "",
+//               },
+//             ],
+//             teleconsultationAvailable: "",
+//             technologyDetails: "",
+//             diagnosticEquipment: "",
+//             surgicalEquipment: "",
+//             isoCertified: "",
+//             nabhAccredited: "",
+//             otherCertifications: "",
+//             regulatoryCompliance: "",
+//             complianceDetails: "",
+//             declarerName: "",
+//             declarerDesignation: "",
+//             declarationDate: today,
+//             additionalDocuments: "",
+//           });
+//           setOtp("");
+//           setOtpSent(false);
+//         } else {
+//           toast.error("Something went wrong", {
+//             position: "bottom-right",
+//             autoClose: 4000,
+//             theme: "dark",
+//           });
+//         }
+//       } else {
+//         setFormPending(false);
+//         toast.error(verifyingOTP.error || "Invalid OTP", {
+//           position: "bottom-right",
+//           autoClose: 4000,
+//           theme: "dark",
+//         });
+//       }
+//     }
+//   };
+
+//   return (
+//     <main className="md:px-8 md:py-4 shadow-xl md:border-2 md:border-gray-200">
+//       <Navbar />
+//       <h1 className="font-semibold text-[24px] my-8 lg:text-[28px] xl:text-[34px] leading-tight text-black text-center md:text-center">
+//         G Care Project Empanelment Application Form
+//       </h1>
+//       <div className="p-4 lg:max-w-[1000px] xl:lg:max-w-[1200px] mx-auto">
+//         <form onSubmit={handleSubmit}>
+//           {/* General Information */}
+//           <h2 className="text-2xl font-semibold mb-4">
+//             Section 1: General Information
+//           </h2>
+//           <label htmlFor="hospitalName" className="block mb-2 font-medium">
+//             Hospital's Full Name
+//           </label>
+//           <input
+//             type="text"
+//             id="hospitalName"
+//             name="hospitalName"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.hospitalName}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             required
+//           />
+
+//           {/* Contact Information */}
+//           <h2 className="text-xl font-medium mt-6 mb-4">Contact Information</h2>
+
+//           <label htmlFor="street" className="block font-medium mb-2">
+//             Street
+//           </label>
+//           <input
+//             type="text"
+//             name="street"
+//             id="street"
+//             value={formData.street}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             className="w-full p-2 rounded-lg mb-4 bg-gray-100"
+//             required
+//           />
+
+//           <label htmlFor="city" className="block font-medium mb-2">
+//             City
+//           </label>
+//           <input
+//             type="text"
+//             name="city"
+//             id="city"
+//             value={formData.city}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             className="w-full p-2 rounded-lg mb-4 bg-gray-100"
+//             required
+//           />
+
+//           <label htmlFor="state" className="block font-medium mb-2">
+//             State
+//           </label>
+//           <input
+//             type="text"
+//             name="state"
+//             id="state"
+//             value={formData.state}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             className="w-full p-2 rounded-lg mb-4 bg-gray-100"
+//             required
+//           />
+
+//           <label htmlFor="pincode" className="block font-medium mb-2">
+//             Pincode
+//           </label>
+//           <input
+//             type="text"
+//             name="pincode"
+//             id="pincode"
+//             value={formData.pincode}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             maxLength={6}
+//             className="w-full p-2 rounded-lg mb-4 bg-gray-100"
+//             required
+//           />
+
+//           <label htmlFor="phoneNumber" className="block mb-2 font-medium">
+//             Phone Number
+//           </label>
+//           <input
+//             type="tel"
+//             id="phoneNumber"
+//             name="phoneNumber"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.phoneNumber}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             maxLength={10}
+//             required
+//           />
+
+//           <label htmlFor="email" className="block mb-2 font-medium">
+//             Email Address
+//           </label>
+//           <input
+//             type="email"
+//             id="email"
+//             name="email"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.email}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             required
+//           />
+
+//           <label htmlFor="website" className="block mb-2 font-medium">
+//             Website
+//           </label>
+//           <input
+//             type="text"
+//             id="website"
+//             name="website"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.website}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             required
+//           />
+
+//           <h2 className="text-xl font-medium mt-6 mb-4">
+//             Registration and Accreditation
+//           </h2>
+
+//           <label
+//             htmlFor="registrationNumber"
+//             className="block mb-2 font-medium"
+//           >
+//             Registration Number
+//           </label>
+//           <input
+//             type="text"
+//             id="registrationNumber"
+//             name="registrationNumber"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.registrationNumber}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//           />
+
+//           <label
+//             htmlFor="dateOfRegistration"
+//             className="block mb-2 font-medium"
+//           >
+//             Date of Registration
+//           </label>
+//           <input
+//             type="text"
+//             id="dateOfRegistration"
+//             name="dateOfRegistration"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.dateOfRegistration}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             required
+//           />
+
+//           <label
+//             htmlFor="accreditationDetails"
+//             className="block mb-2 font-medium"
+//           >
+//             Accreditation Details
+//           </label>
+//           <input
+//             type="text"
+//             id="accreditationDetails"
+//             name="accreditationDetails"
+//             className="w-full p-2 rounded bg-gray-100 mb-4"
+//             value={formData.accreditationDetails}
+//             onChange={handleInputChange}
+//             disabled={otpSent}
+//             required
+//           />
+
+//           {/* Continue with all other form sections... (keeping same structure) */}
+//           {/* Administrative Information, Hospital Info, Services, Staff, Infrastructure, Compliance, Declaration */}
+          
+//           {/* Due to length, I'm showing the OTP section which is the key change */}
+          
+//           {/* ... (all other form fields same as original, just add disabled={otpSent}) ... */}
+
+//           {/* OTP SECTION - SINGLE INPUT */}
+//           {!otpSent ? (
+//             <button
+//               type="submit"
+//               disabled={formPending}
+//               className="w-[200px] p-4 bg-black text-white rounded-sm my-10 lg:w-[400px] disabled:bg-gray-400 disabled:cursor-not-allowed"
+//             >
+//               {formPending ? "Sending OTP..." : "Submit & Send OTP"}
+//             </button>
+//           ) : (
+//             <div className="flex flex-col gap-4 my-6">
+//               <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+//                 <p className="text-green-700 font-medium">✅ OTP sent successfully!</p>
+//                 <p className="text-sm text-green-600 mt-1">
+//                   Check your <strong>Email</strong> and <strong>Mobile</strong> for OTP
+//                 </p>
+//               </div>
+
+//               <input
+//                 type="text"
+//                 name="otp"
+//                 placeholder="Enter 6-digit OTP"
+//                 value={otp}
+//                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+//                 maxLength={6}
+//                 className="w-[200px] p-4 border-2 border-purple-300 rounded-sm lg:w-[400px] focus:outline-none text-lg font-mono"
+//               />
+
+//               <button
+//                 type="submit"
+//                 disabled={formPending || otp.length !== 6}
+//                 className="w-[200px] p-4 bg-black text-white rounded-sm lg:w-[400px] disabled:bg-gray-400"
+//               >
+//                 {formPending ? "Verifying..." : "Verify OTP & Submit"}
+//               </button>
+
+//               <button
+//                 type="button"
+//                 onClick={() => {
+//                   setOtpSent(false);
+//                   setOtp("");
+//                 }}
+//                 className="w-[200px] p-4 bg-gray-200 text-black rounded-sm lg:w-[400px]"
+//               >
+//                 ← Back to Edit Form
+//               </button>
+//             </div>
+//           )}
+//         </form>
+//       </div>
+//       <Footer />
+//     </main>
+//   );
+// };
+
+// export default HospitalForm;
+
+
+
 "use client";
 import React, { useState } from "react";
 import Navbar from "../../../components/Navbar";
@@ -1190,7 +1702,9 @@ import useAuthStore from "../../../store/authStore";
 const today = new Date().toISOString().split("T")[0];
 
 const HospitalForm = () => {
-  const [otp, setOtp] = useState("");
+  // DUAL OTP STATE - Changed from single 'otp' to emailOtp and mobileOtp
+  const [emailOtp, setEmailOtp] = useState("");
+  const [mobileOtp, setMobileOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [formPending, setFormPending] = useState(false);
   
@@ -1324,7 +1838,7 @@ const HospitalForm = () => {
     });
 
     if (!otpSent) {
-      // STEP 1: Send OTP using form email and phone
+      // STEP 1: Send DUAL OTP
       if (!formData.email || !formData.phoneNumber) {
         toast.error("Please fill email and phone number", {
           position: "bottom-right",
@@ -1334,14 +1848,20 @@ const HospitalForm = () => {
       }
 
       setFormPending(true);
+      toast.info("📤 Sending OTPs to email and mobile...", {
+        position: "bottom-right",
+        theme: "dark",
+        autoClose: 2000,
+      });
+
       const otpHasSent = await sendOTP(formData.email, formData.phoneNumber);
       setFormPending(false);
 
       if (otpHasSent.success === true) {
         setOtpSent(true);
-        toast.success("OTP sent to your email and mobile!", {
+        toast.success("✅ Check your email and mobile for separate OTPs!", {
           position: "bottom-right",
-          autoClose: 4000,
+          autoClose: 5000,
           theme: "dark",
         });
       } else {
@@ -1351,16 +1871,30 @@ const HospitalForm = () => {
         });
       }
     } else {
-      // STEP 2: Verify OTP
+      // STEP 2: Verify BOTH OTPs
+      if (emailOtp.length !== 6 || mobileOtp.length !== 6) {
+        toast.error("Please enter both 6-digit OTPs", {
+          position: "bottom-right",
+          theme: "dark",
+        });
+        return;
+      }
+
       setFormPending(true);
-      const verifyingOTP = await verifyOTP(formData.email, otp);
+      toast.info("🔍 Verifying OTPs...", {
+        position: "bottom-right",
+        theme: "dark",
+        autoClose: 2000,
+      });
+
+      const verifyingOTP = await verifyOTP(formData.email, emailOtp, mobileOtp);
 
       if (verifyingOTP.success === true) {
         const res = await hospitalDetails(data);
         setFormPending(false);
 
         if (res.success) {
-          toast.success("Hospital registered successfully!", {
+          toast.success("🎉 Hospital registered successfully!", {
             position: "bottom-right",
             autoClose: 4000,
             theme: "dark",
@@ -1422,7 +1956,8 @@ const HospitalForm = () => {
             declarationDate: today,
             additionalDocuments: "",
           });
-          setOtp("");
+          setEmailOtp("");
+          setMobileOtp("");
           setOtpSent(false);
         } else {
           toast.error("Something went wrong", {
@@ -1625,58 +2160,127 @@ const HospitalForm = () => {
             required
           />
 
-          {/* Continue with all other form sections... (keeping same structure) */}
-          {/* Administrative Information, Hospital Info, Services, Staff, Infrastructure, Compliance, Declaration */}
+          {/* ... Add all other form fields from original (keeping same as Document 5) ... */}
           
-          {/* Due to length, I'm showing the OTP section which is the key change */}
-          
-          {/* ... (all other form fields same as original, just add disabled={otpSent}) ... */}
-
-          {/* OTP SECTION - SINGLE INPUT */}
+          {/* OTP SECTION - DUAL OTP BOXES */}
           {!otpSent ? (
             <button
               type="submit"
               disabled={formPending}
-              className="w-[200px] p-4 bg-black text-white rounded-sm my-10 lg:w-[400px] disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="w-full md:w-[400px] p-4 bg-black text-white rounded-lg font-semibold my-10 disabled:bg-gray-400 disabled:cursor-not-allowed hover:bg-gray-800 transition"
             >
-              {formPending ? "Sending OTP..." : "Submit & Send OTP"}
+              {formPending ? "Sending OTPs..." : "Submit & Send OTP"}
             </button>
           ) : (
-            <div className="flex flex-col gap-4 my-6">
-              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                <p className="text-green-700 font-medium">✅ OTP sent successfully!</p>
-                <p className="text-sm text-green-600 mt-1">
-                  Check your <strong>Email</strong> and <strong>Mobile</strong> for OTP
-                </p>
+            <div className="flex flex-col gap-6 my-10 max-w-3xl mx-auto">
+              {/* Info Box */}
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-500 p-5 rounded-lg shadow-sm">
+                <p className="text-blue-800 font-bold text-lg mb-2">📧📱 OTPs Sent Successfully!</p>
+                <div className="text-sm text-gray-700 space-y-1">
+                  <p>✓ Check your <strong className="text-blue-600">EMAIL</strong> for your Email OTP</p>
+                  <p>✓ Check your <strong className="text-green-600">MOBILE</strong> for your Mobile OTP</p>
+                  <p className="text-orange-600 font-medium mt-2">⏱️ Both codes valid for 5 minutes</p>
+                </div>
               </div>
 
-              <input
-                type="text"
-                name="otp"
-                placeholder="Enter 6-digit OTP"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                maxLength={6}
-                className="w-[200px] p-4 border-2 border-purple-300 rounded-sm lg:w-[400px] focus:outline-none text-lg font-mono"
-              />
+              {/* Dual OTP Input Boxes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* EMAIL OTP BOX */}
+                <div className="flex flex-col space-y-2">
+                  <label className="font-semibold text-base flex items-center gap-2">
+                    <span className="text-2xl">📧</span>
+                    <span className="text-blue-700">Email OTP</span>
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    name="emailOtp"
+                    placeholder="• • • • • •"
+                    value={emailOtp}
+                    onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    className="p-4 border-2 border-blue-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-3xl font-bold text-center tracking-widest bg-blue-50"
+                    required
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    From your email inbox
+                  </p>
+                </div>
 
+                {/* MOBILE OTP BOX */}
+                <div className="flex flex-col space-y-2">
+                  <label className="font-semibold text-base flex items-center gap-2">
+                    <span className="text-2xl">📱</span>
+                    <span className="text-green-700">Mobile OTP</span>
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    name="mobileOtp"
+                    placeholder="• • • • • •"
+                    value={mobileOtp}
+                    onChange={(e) => setMobileOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    maxLength={6}
+                    className="p-4 border-2 border-green-300 rounded-lg focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200 text-3xl font-bold text-center tracking-widest bg-green-50"
+                    required
+                    autoComplete="off"
+                  />
+                  <p className="text-xs text-gray-500 text-center">
+                    From your SMS
+                  </p>
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="flex items-center justify-center gap-4 my-4">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${emailOtp.length === 6 ? 'bg-blue-500 text-white scale-110' : 'bg-gray-200 text-gray-400'}`}>
+                  📧
+                </div>
+                <div className="text-2xl text-gray-400">+</div>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${mobileOtp.length === 6 ? 'bg-green-500 text-white scale-110' : 'bg-gray-200 text-gray-400'}`}>
+                  📱
+                </div>
+                <div className="text-2xl text-gray-400">=</div>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${emailOtp.length === 6 && mobileOtp.length === 6 ? 'bg-purple-500 text-white animate-pulse scale-110' : 'bg-gray-200 text-gray-400'}`}>
+                  ✓
+                </div>
+              </div>
+
+              {/* Verify Button */}
               <button
                 type="submit"
-                disabled={formPending || otp.length !== 6}
-                className="w-[200px] p-4 bg-black text-white rounded-sm lg:w-[400px] disabled:bg-gray-400"
+                disabled={formPending || emailOtp.length !== 6 || mobileOtp.length !== 6}
+                className="w-full p-4 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg font-bold text-lg disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed hover:from-blue-700 hover:to-green-700 transition-all shadow-lg"
               >
-                {formPending ? "Verifying..." : "Verify OTP & Submit"}
+                {formPending ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Verifying OTPs...
+                  </span>
+                ) : (
+                  "Verify Both OTPs & Submit"
+                )}
               </button>
 
+              {/* Resend Button */}
               <button
                 type="button"
                 onClick={() => {
                   setOtpSent(false);
-                  setOtp("");
+                  setEmailOtp("");
+                  setMobileOtp("");
                 }}
-                className="w-[200px] p-4 bg-gray-200 text-black rounded-sm lg:w-[400px]"
+                className="w-full p-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition border border-gray-300"
               >
-                ← Back to Edit Form
+                ← Resend OTP
               </button>
             </div>
           )}
