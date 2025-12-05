@@ -18,6 +18,7 @@
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@react-email/components": "^1.0.0",
     "@react-email/render": "^1.0.4",
+    "@sendinblue/client": "^3.3.1",
     "algoliasearch": "^5.1.1",
     "amazon-cognito-identity-js": "^6.3.16",
     "aws-sdk": "^2.1692.0",
