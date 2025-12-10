@@ -10,7 +10,7 @@ export async function POST(req) {
         const { amount, buyer_name, buyer_email, buyer_phone } = data;
 
         // Replace with your own InstaMojo API key and Auth token
-        const api_key = 'aeba92e7fb23d0dcd04e59d4843f391c';
+        const api_key = 'aeba92e7fb23d0dcd04e59d4843f391c'; 
         const auth_token = '171fa897cd458790dfc9594b3067ec86';
 
         const response = await fetch('https://test.instamojo.com/api/1.1/payment-requests/', {
